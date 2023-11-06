@@ -26,7 +26,7 @@ restore_bodey = {
                     "rename_pattern": "(.+)",
                     "rename_replacement": "restored-$1"
                 }
-restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false", json=restore_bodey)
+restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false", verify=False, headers=headers, json=restore_bodey)
 print(restore_rsp)
 # # Get all indices + settings
 # indices_resp = get(f"{es_host}/{indices_wildcard}", auth=basic, verify=False)
