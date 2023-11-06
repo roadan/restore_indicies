@@ -30,7 +30,8 @@ restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_co
 print(restore_rsp.request.url)
 print(restore_rsp.request.body)
 print(restore_rsp.request.headers)
-print(restore_rsp)
+res = restore_rsp.json()
+print(res)
 # # Get all indices + settings
 # indices_resp = get(f"{es_host}/{indices_wildcard}", auth=basic, verify=False)
 
