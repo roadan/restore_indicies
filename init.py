@@ -68,7 +68,7 @@ for index_name, payload in indices_payload.items():
     
     # TODO: this is very likely to time out on medium/large indices. You need to add the query param wait_for_completion=false and add a loop that checks if the task id is really done
     #request_per_second=1
-    reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false&request_per_second=1", auth=basic, verify=False, headers=headers, json=reindex_payload)
+    reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false&requests_per_second=1", auth=basic, verify=False, headers=headers, json=reindex_payload)
     reindex_resp_json = reindex_resp.json()
     print(reindex_resp_json)
 
