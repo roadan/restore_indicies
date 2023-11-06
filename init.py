@@ -64,18 +64,19 @@ for index_name, payload in indices_payload.items():
         continue
     
     # # Reindex with suffix
-    # reindex_payload = {"source": {"index": index_name, "size": 1}, "dest": {"index": new_index_name}}
-    
-    # # TODO: this is very likely to time out on medium/large indices. You need to add the query param wait_for_completion=false and add a loop that checks if the task id is really done
-    # #request_per_second=1
-    # # reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false&requests_per_second=1", auth=basic, verify=False, headers=headers, json=reindex_payload)
-    # reindex_resp = post(f"{es_host}/_reindex", auth=basic, verify=False, headers=headers, json=reindex_payload)
-    # reindex_resp_json = reindex_resp.json()
-    # print(reindex_resp_json)
+    reindex_payload = {"source": {"index": index_name, "size": 1}, "dest": {"index": new_index_name}}
+    print(reindex_payload)
 
-    # if reindex_resp.status_code != 200:
-    #     print(f"Failed to reindex {index_name} to {new_index_name}")
-    #     continue
+    # TODO: this is very likely to time out on medium/large indices. You need to add the query param wait_for_completion=false and add a loop that checks if the task id is really done
+    #request_per_second=1
+    reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false&requests_per_second=1", auth=basic, verify=False, headers=headers, json=reindex_payload)
+    #reindex_resp = post(f"{es_host}/_reindex", auth=basic, verify=False, headers=headers, json=reindex_payload)
+    reindex_resp_json = reindex_resp.json()
+    print(reindex_resp_json)
+
+    if reindex_resp.status_code != 200:
+        print(f"Failed to reindex {index_name} to {new_index_name}")
+        continue
 
     # # Delete source index
     # delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
