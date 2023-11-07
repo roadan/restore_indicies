@@ -59,10 +59,9 @@ while recovery.text != "":
     recovery = get(f"{es_host}/_cat/recovery?active_only",
                    auth=basic, verify=False)
 
-print("Restoring is ready")
+print("Restoring completed")
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
-
 if indices_resp.status_code != 200:
     raise Exception("Failed to get indices list")
 
@@ -82,9 +81,9 @@ for index_name, payload in indices_payload.items():
     # Create the source index
     new_index_name = index_name.replace('restored-', '')
     print(f"Creating index {new_index_name}...")
+
     put_index_resp = put(f"{es_host}/{new_index_name}",
                          auth=basic, verify=False, headers=headers, json=payload)
-
     if put_index_resp.status_code != 200:
         print(
             f"Failed to create index {index_name}. Received status code {put_index_resp.status_code}")
@@ -92,22 +91,37 @@ for index_name, payload in indices_payload.items():
 
     # # Reindex with suffix
     reindex_body = {
-        "source": {"index": index_name, "size": 1},
+        "source": {"index": index_name},
         "dest": {"index": new_index_name}
     }
     # TODO: this is very likely to time out on medium/large indices. You need to add the query param wait_for_completion=false and add a loop that checks if the task id is really done
     # request_per_second=1
     print(f"Reindexing {index_name} to {new_index_name}...")
-    reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false&requests_per_second=1",
+    reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false",
                         auth=basic, verify=False, headers=headers, json=reindex_body)
     # reindex_resp = post(f"{es_host}/_reindex", auth=basic, verify=False, headers=headers, json=reindex_payload)
     reindex_resp_json = reindex_resp.json()
-    print(reindex_resp_json)
 
     if reindex_resp.status_code != 200:
         print(
             f"Failed to reindex {index_name} to {new_index_name}. Received status code {reindex_resp.status_code}")
         continue
+
+    task_id = reindex_resp_json["task"]
+
+    task_status_resp = get(
+        f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
+    task_status_resp_json = task_status_resp.json()
+
+    while task_status_resp_json["completed"] == False:
+        print("Reindexing is in progress... Task status response: ",
+              task_status_resp_json)
+        time.sleep(5)
+        task_status_resp = get(
+            f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
+        task_status_resp_json = task_status_resp.json()
+
+    print("Reindexing completed")
 
     # # Delete source index
     # delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
