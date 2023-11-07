@@ -93,20 +93,15 @@ for index_name, payload in indices_payload.items():
         log(
             f"Failed to create index {new_index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
         continue
-    shards_resp = get(f"{es_host}/_cat/shards?pretty",
-                      auth=basic, verify=False)
-    log(f"Shards: {shards_resp.text}")
-    health_resp = get(f"{es_host}/_cluster/health?pretty",
-                      auth=basic, verify=False)
-    log(f"Health: {health_resp.json()}")
-    """ log(f"Waiting for index to be green...")
 
-    health_resp = get(f"{es_host}/_cluster/health/{new_index_name}?wait_for_status=green&timeout=50s",
+    log(f"Waiting for cluster to be green...")
+
+    health_resp = get(f"{es_host}/_cluster/health?wait_for_status=green&timeout=50s",
                       auth=basic, verify=False)
     if health_resp.status_code != 200:
         log(
-            f"Failed to wait for index to be green. Received status code {health_resp.status_code} and body {health_resp.json()}")
-        continue """
+            f"Failed to wait for cluster health. Received status code {health_resp.status_code} and body {health_resp.json()}")
+        continue
 
     reindex_body = {
         "source": {"index": index_name},
