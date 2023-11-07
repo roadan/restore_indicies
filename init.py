@@ -89,6 +89,15 @@ for index_name, payload in indices_payload.items():
             f"Failed to create index {new_index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
         continue
 
+    print(f"Waiting for index to be green...")
+
+    health_resp = get(f"{es_host}/_cluster/health/{new_index_name}?wait_for_status=green&timeout=50s",
+                      auth=basic, verify=False)
+    if health_resp.status_code != 200:
+        print(
+            f"Failed to wait for index to be green. Received status code {health_resp.status_code} and body {health_resp.json()}")
+        continue
+
     reindex_body = {
         "source": {"index": index_name},
         "dest": {"index": new_index_name}
@@ -108,22 +117,24 @@ for index_name, payload in indices_payload.items():
 
     task_id = reindex_resp_json["task"]
 
-    task_status_resp = get(
-        f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
-    task_status_resp_json = task_status_resp.json()
-
-    while task_status_resp_json["completed"] == False:
-        print("Reindexing is in progress... Task status response: ",
-              task_status_resp_json)
-        time.sleep(5)
+    while True:
         task_status_resp = get(
             f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
         task_status_resp_json = task_status_resp.json()
+        if task_status_resp_json["completed"]:
+            break
+        print("Reindexing is in progress... Task status: ",
+              task_status_resp_json)
+        time.sleep(5)
 
-    print(task_status_resp_json)
+    if task_status_resp_json["error"] is not None:
+        print(
+            f"Reindexing failed. Received status code {task_status_resp.status_code} and body {task_status_resp_json}")
+        continue
+
     print("Reindex completed. Deleting source index...")
 
-    """ delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
+    delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
     if delete_resp.status_code != 200:
         print(f"Failed to delete {index_name}")
-        continue """
+        continue
