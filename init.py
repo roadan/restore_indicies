@@ -59,7 +59,7 @@ while recovery.text != "":
     recovery = get(f"{es_host}/_cat/recovery?active_only",
                    auth=basic, verify=False)
 
-print("Restoring completed")
+print("Restore completed")
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 if indices_resp.status_code != 200:
@@ -121,10 +121,9 @@ for index_name, payload in indices_payload.items():
             f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
         task_status_resp_json = task_status_resp.json()
 
-    print("Reindexing completed")
+    print("Reindex completed. Deleting source index...")
 
-    # # Delete source index
-    # delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
-    # if delete_resp.status_code != 200:
-    #     print(f"Failed to reindex {index_name} to {new_index_name}")
-    #     continue
+    delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
+    if delete_resp.status_code != 200:
+        print(f"Failed to delete {index_name}")
+        continue
