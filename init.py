@@ -78,8 +78,8 @@ for index_name, payload in indices_payload.items():
         if field in payload["settings"]["index"]:
             del payload["settings"]["index"][field]
 
-    # Create the source index
     new_index_name = index_name.replace('restored-', '')
+
     print(f"Creating index {new_index_name}...")
 
     put_index_resp = put(f"{es_host}/{new_index_name}",
@@ -89,7 +89,6 @@ for index_name, payload in indices_payload.items():
             f"Failed to create index {index_name}. Received status code {put_index_resp.status_code}")
         continue
 
-    # # Reindex with suffix
     reindex_body = {
         "source": {"index": index_name},
         "dest": {"index": new_index_name}
@@ -123,7 +122,7 @@ for index_name, payload in indices_payload.items():
 
     print("Reindex completed. Deleting source index...")
 
-    delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
+    """ delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
     if delete_resp.status_code != 200:
         print(f"Failed to delete {index_name}")
-        continue
+        continue """
