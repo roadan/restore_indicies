@@ -12,10 +12,8 @@ headers = {
 "Content-Type": "application/json"
 }
 es_host = f"https://{params['-a']}:9200"
-print(es_host)
-indices_wildcard = "*" if '-i' not in params else params['-i']
 
-print(indices_wildcard)
+indices_wildcard = "*" if '-i' not in params else params['-i']
 
 ############################
 # restoring indices from 
@@ -27,11 +25,12 @@ restore_bodey = {
                     "rename_pattern": "(.+)",
                     "rename_replacement": "restored-$1"
                 }
+
 restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false", auth=basic, verify=False, headers=headers, json=restore_bodey)
 
 recovery = get(f"{es_host}/_cat/recovery?active_only", auth=basic, verify=False)
 while recovery.text != "":
-    print(recovery.text)
+    print("Recovery response: ", recovery.text)
     time.sleep(2)
     recovery = get(f"{es_host}/_cat/recovery?active_only", auth=basic, verify=False)
     
