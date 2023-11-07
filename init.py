@@ -136,7 +136,7 @@ for index_name, payload in indices_payload.items():
             f"Reindexing failed. Received status code {task_status_resp.status_code} and body {task_status_resp_json}")
         continue
 
-    log("Reindex completed. Deleting source index...")
+    log(f"Reindex completed. Deleting {index_name}...")
 
     delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
     if delete_resp.status_code != 200:
