@@ -35,8 +35,6 @@ if repo_rsp.status_code != 200:
     if repo_rsp.status_code != 200:
         raise Exception("Failed to create repository")
 
-# Restore snapshot
-
 restore_body = {
     "indices": f"{indices_wildcard},-.*",
     "ignore_index_settings": "index.search*",
@@ -49,15 +47,19 @@ print(f"Restoring snapshot for {indices_wildcard}...")
 restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false",
                    auth=basic, verify=False, headers=headers, json=restore_body)
 
+if restore_rsp.status_code != 200:
+    raise Exception("Failed to restore snapshot")
+
 recovery = get(f"{es_host}/_cat/recovery?active_only",
                auth=basic, verify=False)
 while recovery.text != "":
-    print("Recovery response: ", recovery.text)
+    print("Restoring is in progress... Recovery response: ", recovery.text)
     time.sleep(2)
     recovery = get(f"{es_host}/_cat/recovery?active_only",
                    auth=basic, verify=False)
 
-# Get all indices + settings
+print("Restoring is ready")
+
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 
 if indices_resp.status_code != 200:
