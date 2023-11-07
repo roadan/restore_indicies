@@ -48,7 +48,8 @@ restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_co
                    auth=basic, verify=False, headers=headers, json=restore_body)
 
 if restore_rsp.status_code != 200:
-    raise Exception("Failed to restore snapshot")
+    raise Exception(
+        f"Failed to restore snapshot. Received status {restore_rsp.status_code} and body {restore_rsp.json()}")
 
 recovery = get(f"{es_host}/_cat/recovery?active_only",
                auth=basic, verify=False)
