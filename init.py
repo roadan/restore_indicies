@@ -59,7 +59,7 @@ for index_name, payload in indices_payload.items():
     put_index_resp = put(f"{es_host}/{new_index_name}", auth=basic, verify=False, headers=headers, json=payload)
 
     if put_index_resp.status_code != 200:
-        print(f"Failed to create indicex {index_name}")
+        print(f"Failed to create indicex {index_name}. Received status code {put_index_resp.status_code}")
         continue
     
     # # Reindex with suffix
