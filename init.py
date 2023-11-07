@@ -96,6 +96,9 @@ for index_name, payload in indices_payload.items():
     shards_resp = get(f"{es_host}/_cat/shards?pretty",
                       auth=basic, verify=False)
     log(f"Shards: {shards_resp.text}")
+    health_resp = get(f"{es_host}/_cluster/health?pretty",
+                      auth=basic, verify=False)
+    log(f"Health: {health_resp.json()}")
     """ log(f"Waiting for index to be green...")
 
     health_resp = get(f"{es_host}/_cluster/health/{new_index_name}?wait_for_status=green&timeout=50s",
@@ -130,8 +133,8 @@ for index_name, payload in indices_payload.items():
         task_status_resp_json = task_status_resp.json()
         if task_status_resp_json["completed"]:
             break
-        log("Reindexing is in progress... Task status: ",
-            task_status_resp_json)
+        log(
+            f"Reindexing is in progress... Task status: {task_status_resp_json}")
         time.sleep(5)
 
     if task_status_resp_json["error"] is not None:
