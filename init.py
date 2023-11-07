@@ -129,7 +129,7 @@ for index_name, payload in indices_payload.items():
             break
         log(
             f"Reindexing is in progress... Task status: {task_status_resp_json}")
-        time.sleep(5)
+        time.sleep(10)
 
     if task_status_resp_json.get("error", False):
         log(
