@@ -56,13 +56,13 @@ if restore_rsp.status_code != 200:
     raise Exception(
         f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
 
-recovery = get(f"{es_host}/_cat/recovery?active_only",
-               auth=basic, verify=False)
-while recovery.text != "":
-    log("Restoring is in progress... Recovery response: ", recovery.text)
-    time.sleep(2)
+while True:
     recovery = get(f"{es_host}/_cat/recovery?active_only",
                    auth=basic, verify=False)
+    if recovery.text == "":
+        break
+    log("Restoring is in progress... Recovery response: ", recovery.text)
+    time.sleep(2)
 
 log("Restore completed")
 
@@ -107,12 +107,11 @@ for index_name, payload in indices_payload.items():
         "source": {"index": index_name},
         "dest": {"index": new_index_name}
     }
-    # TODO: this is very likely to time out on medium/large indices. You need to add the query param wait_for_completion=false and add a loop that checks if the task id is really done
-    # request_per_second=1
+
     log(f"Reindexing {index_name} to {new_index_name}...")
+
     reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false",
                         auth=basic, verify=False, headers=headers, json=reindex_body)
-    # reindex_resp = post(f"{es_host}/_reindex", auth=basic, verify=False, headers=headers, json=reindex_payload)
     reindex_resp_json = reindex_resp.json()
 
     if reindex_resp.status_code != 200:
@@ -132,7 +131,7 @@ for index_name, payload in indices_payload.items():
             f"Reindexing is in progress... Task status: {task_status_resp_json}")
         time.sleep(5)
 
-    if task_status_resp_json["error"] is not None:
+    if task_status_resp_json.get("error", False):
         log(
             f"Reindexing failed. Received status code {task_status_resp.status_code} and body {task_status_resp_json}")
         continue
