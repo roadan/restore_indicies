@@ -86,7 +86,7 @@ for index_name, payload in indices_payload.items():
                          auth=basic, verify=False, headers=headers, json=payload)
     if put_index_resp.status_code != 200:
         print(
-            f"Failed to create index {index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
+            f"Failed to create index {new_index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
         continue
 
     reindex_body = {
@@ -120,6 +120,7 @@ for index_name, payload in indices_payload.items():
             f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
         task_status_resp_json = task_status_resp.json()
 
+    print(task_status_resp_json)
     print("Reindex completed. Deleting source index...")
 
     """ delete_resp = delete(f"{es_host}/{index_name}", auth=basic, verify=False)
