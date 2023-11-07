@@ -49,7 +49,7 @@ restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_co
 
 if restore_rsp.status_code != 200:
     raise Exception(
-        f"Failed to restore snapshot. Received status {restore_rsp.status_code} and body {restore_rsp.json()}")
+        f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
 
 recovery = get(f"{es_host}/_cat/recovery?active_only",
                auth=basic, verify=False)
@@ -86,7 +86,7 @@ for index_name, payload in indices_payload.items():
                          auth=basic, verify=False, headers=headers, json=payload)
     if put_index_resp.status_code != 200:
         print(
-            f"Failed to create index {index_name}. Received status code {put_index_resp.status_code}")
+            f"Failed to create index {index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
         continue
 
     reindex_body = {
@@ -103,7 +103,7 @@ for index_name, payload in indices_payload.items():
 
     if reindex_resp.status_code != 200:
         print(
-            f"Failed to reindex {index_name} to {new_index_name}. Received status code {reindex_resp.status_code}")
+            f"Failed to reindex {index_name} to {new_index_name}. Received status code {reindex_resp.status_code} and body {reindex_resp.json()}")
         continue
 
     task_id = reindex_resp_json["task"]
