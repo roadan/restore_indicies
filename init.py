@@ -109,6 +109,8 @@ for index_name, payload in indices_payload.items():
 
     task_id = reindex_resp_json["task"]
 
+    time.sleep(5)
+
     task_status_resp = get(
         f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
     task_status_resp_json = task_status_resp.json()
