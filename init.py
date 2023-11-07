@@ -74,7 +74,7 @@ for index_name, payload in indices_payload.items():
     print(reindex_resp_json)
 
     if reindex_resp.status_code != 200:
-        print(f"Failed to reindex {index_name} to {new_index_name}")
+        print(f"Failed to reindex {index_name} to {new_index_name}. Received status code {reindex_resp.status_code}")
         continue
 
     # # Delete source index
