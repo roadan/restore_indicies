@@ -64,7 +64,15 @@ while True:
     log("Restoring is in progress... Recovery response: ", recovery.text)
     time.sleep(2)
 
-log("Restore completed")
+log("Restore completed. Waiting for cluster to be green...")
+
+while True:
+    health = get(f"{es_host}/_cluster/health",
+                 auth=basic, verify=False).json()
+    if health["status"] == "green":
+        break
+    log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
+    time.sleep(10)
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 if indices_resp.status_code != 200:
@@ -92,15 +100,6 @@ for index_name, payload in indices_payload.items():
     if put_index_resp.status_code != 200:
         log(
             f"Failed to create index {new_index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
-        continue
-
-    log(f"Waiting for cluster to be green...")
-
-    health_resp = get(f"{es_host}/_cluster/health?wait_for_status=green&timeout=50s",
-                      auth=basic, verify=False)
-    if health_resp.status_code != 200:
-        log(
-            f"Failed to wait for cluster health. Received status code {health_resp.status_code} and body {health_resp.json()}")
         continue
 
     reindex_body = {
