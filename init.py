@@ -143,3 +143,5 @@ for index_name, payload in indices_payload.items():
     if delete_resp.status_code != 200:
         log(f"Failed to delete {index_name}")
         continue
+
+print("Done!")
