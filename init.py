@@ -72,7 +72,8 @@ if indices_resp.status_code != 200:
 
 indices_payload = indices_resp.json()
 
-bad_fields = ["creation_date", "provided_name", "uuid", "version", "blocks"]
+bad_fields = ["creation_date", "provided_name",
+              "uuid", "version", "blocks", "resize"]
 # each key in the dict is an index name, each value is the index settings/mappings etc
 for index_name, payload in indices_payload.items():
     if index_name[0] == '.':
