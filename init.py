@@ -67,12 +67,14 @@ while True:
 log("Restore completed. Waiting for cluster to be green...")
 
 while True:
+    time.sleep(30)
     health = get(f"{es_host}/_cluster/health",
                  auth=basic, verify=False).json()
     if health["status"] == "green":
         break
     log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
-    time.sleep(10)
+
+log("Cluster is green")
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 if indices_resp.status_code != 200:
@@ -128,7 +130,7 @@ for index_name, payload in indices_payload.items():
             break
         log(
             f"Reindexing is in progress... Task status: {task_status_resp_json}")
-        time.sleep(10)
+        time.sleep(60)
 
     if task_status_resp_json.get("error", False):
         log(
