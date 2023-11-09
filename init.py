@@ -64,17 +64,7 @@ while True:
     log("Restoring is in progress... Recovery response: ", recovery.text)
     time.sleep(2)
 
-log("Restore completed. Waiting for cluster to be green...")
-
-while True:
-    time.sleep(30)
-    health = get(f"{es_host}/_cluster/health",
-                 auth=basic, verify=False).json()
-    if health["status"] == "green":
-        break
-    log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
-
-log("Cluster is green")
+log("Restore completed")
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 if indices_resp.status_code != 200:
@@ -87,6 +77,18 @@ bad_fields = ["creation_date", "provided_name", "uuid", "version", "blocks"]
 for index_name, payload in indices_payload.items():
     if index_name[0] == '.':
         continue
+
+    log("Waiting for cluster to be green...")
+
+    while True:
+        time.sleep(60)
+        health = get(f"{es_host}/_cluster/health",
+                     auth=basic, verify=False).json()
+        if health["status"] == "green":
+            break
+        log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
+
+    log("Cluster is green")
 
     # remove stuff from payload that break the put index request
     for field in bad_fields:
@@ -104,12 +106,12 @@ for index_name, payload in indices_payload.items():
             f"Failed to create index {new_index_name}. Received status code {put_index_resp.status_code} and body {put_index_resp.json()}")
         continue
 
+    log(f"Reindexing {index_name} to {new_index_name}...")
+
     reindex_body = {
         "source": {"index": index_name},
         "dest": {"index": new_index_name}
     }
-
-    log(f"Reindexing {index_name} to {new_index_name}...")
 
     reindex_resp = post(f"{es_host}/_reindex?wait_for_completion=false",
                         auth=basic, verify=False, headers=headers, json=reindex_body)
@@ -122,15 +124,21 @@ for index_name, payload in indices_payload.items():
 
     task_id = reindex_resp_json["task"]
 
+    task_status_resp = get(
+        f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
+    task_status_resp_json = task_status_resp.json()
+
+    log(f"Reindexing task: {task_status_resp_json}")
+
     while True:
+        time.sleep(60)
         task_status_resp = get(
             f"{es_host}/_tasks/{task_id}", auth=basic, verify=False)
         task_status_resp_json = task_status_resp.json()
         if task_status_resp_json["completed"]:
             break
         log(
-            f"Reindexing is in progress... Task status: {task_status_resp_json}")
-        time.sleep(60)
+            f"Reindexing is still in progress... Task status: {task_status_resp_json.get('task', {}).get('status', 'unknown')}")
 
     if task_status_resp_json.get("error", False):
         log(
@@ -144,4 +152,4 @@ for index_name, payload in indices_payload.items():
         log(f"Failed to delete {index_name}")
         continue
 
-print("Done!")
+log("Done!")
