@@ -96,6 +96,9 @@ for index_name, payload in indices_payload.items():
         if field in payload["settings"]["index"]:
             del payload["settings"]["index"][field]
 
+    # set number of shards to 1
+    payload["settings"]["index"]["number_of_shards"] = 1
+
     new_index_name = index_name.replace('restored-', '')
 
     log(f"Creating index {new_index_name}...")
