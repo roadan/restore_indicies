@@ -10,8 +10,8 @@ def log(msg):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 
-opts, args = getopt.getopt(sys.argv[1:], "hu:p:a:i:x", [
-                           "user", "pass", "address", "indicies"])
+opts, args = getopt.getopt(sys.argv[1:], "hu:p:a:i:s:x", [
+                           "user", "pass", "address", "indices", "shards"])
 params = dict(opts)
 
 basic = HTTPBasicAuth(params['-u'], params['-p'])
@@ -21,6 +21,8 @@ headers = {
 es_host = f"https://{params['-a']}:9200"
 
 indices_wildcard = "*" if '-i' not in params else params['-i']
+
+num_of_shards = int(params['-s']) if '-s' in params else None
 
 repo_rsp = get(f"{es_host}/_snapshot/az_repo", auth=basic, verify=False)
 if repo_rsp.status_code != 200:
@@ -97,6 +99,10 @@ for index_name, payload in indices_payload.items():
             del payload["settings"]["index"][field]
 
     new_index_name = index_name.replace('restored-', '')
+
+    if isinstance(num_of_shards, int):
+        print(f"Setting number of shards to {num_of_shards}")
+        payload["settings"]["index"]["number_of_shards"] = num_of_shards
 
     log(f"Creating index {new_index_name}...")
 
