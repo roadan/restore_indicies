@@ -63,7 +63,7 @@ while True:
                    auth=basic, verify=False)
     if recovery.text == "":
         break
-    log("Restoring is in progress... Recovery response: ", recovery.text)
+    log(f"Restoring is in progress... Recovery response: {recovery.text}")
     time.sleep(2)
 
 log("Restore completed")
