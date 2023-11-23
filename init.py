@@ -64,7 +64,7 @@ while True:
     if recovery.text == "":
         break
     log(f"Restoring is in progress... Recovery response: {recovery.text}")
-    time.sleep(2)
+    time.sleep(60)
 
 log("Restore completed")
 
