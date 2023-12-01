@@ -59,12 +59,12 @@ if restore_rsp.status_code != 200:
         f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
 
 while True:
+    time.sleep(60)
     recovery = get(f"{es_host}/_cat/recovery?active_only",
                    auth=basic, verify=False)
     if recovery.text == "":
         break
-    log(f"Restoring is in progress... Recovery response: {recovery.text}")
-    time.sleep(60)
+    log(f"Restoring is still in progress...")
 
 log("Restore completed")
 
