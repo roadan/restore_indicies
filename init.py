@@ -10,6 +10,20 @@ def log(msg):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 
+def wait_for_cluster_to_be_green(interval=60):
+    log("Waiting for cluster to be green...")
+
+    while True:
+        time.sleep(interval)
+        health = get(f"{es_host}/_cluster/health",
+                     auth=basic, verify=False).json()
+        if health["status"] == "green":
+            break
+        log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
+
+    log("Cluster is green")
+
+
 opts, args = getopt.getopt(sys.argv[1:], "hu:p:a:i:s:x", [
                            "user", "pass", "address", "indices", "shards"])
 params = dict(opts)
@@ -58,15 +72,7 @@ if restore_rsp.status_code != 200:
     raise Exception(
         f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
 
-while True:
-    time.sleep(60)
-    recovery = get(f"{es_host}/_cat/recovery?active_only",
-                   auth=basic, verify=False)
-    if recovery.text == "":
-        break
-    log(f"Restoring is still in progress...")
-
-log("Restore completed")
+wait_for_cluster_to_be_green()
 
 indices_resp = get(f"{es_host}/restored-*", auth=basic, verify=False)
 if indices_resp.status_code != 200:
@@ -81,17 +87,7 @@ for index_name, payload in indices_payload.items():
     if index_name[0] == '.':
         continue
 
-    log("Waiting for cluster to be green...")
-
-    while True:
-        time.sleep(60)
-        health = get(f"{es_host}/_cluster/health",
-                     auth=basic, verify=False).json()
-        if health["status"] == "green":
-            break
-        log(f"Still waiting... Current status is {health['status']} with {health['initializing_shards']} initializing shards and {health['unassigned_shards']} unassigned shards")
-
-    log("Cluster is green")
+    wait_for_cluster_to_be_green()
 
     # remove stuff from payload that break the put index request
     for field in bad_fields:
