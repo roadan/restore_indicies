@@ -100,6 +100,10 @@ for index_name, payload in indices_payload.items():
         print(f"Setting number of shards to {num_of_shards}")
         payload["settings"]["index"]["number_of_shards"] = num_of_shards
 
+    if new_index_name == "nyt-4":
+        print("Setting nested limit to 60000")
+        payload["settings"]["index"]["mapping"]["nested_objects"]["limit"] = 60000
+
     log(f"Creating index {new_index_name}...")
 
     put_index_resp = put(f"{es_host}/{new_index_name}",
