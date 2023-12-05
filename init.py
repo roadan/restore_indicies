@@ -102,7 +102,11 @@ for index_name, payload in indices_payload.items():
 
     if new_index_name == "nyt-4":
         print("Setting nested limit to 60000")
-        payload["settings"]["index"]["mapping"]["nested_objects"]["limit"] = 60000
+        payload["settings"]["index"]["mapping"] = {
+            "nested_fields": {
+                "limit": 60000
+            }
+        }
 
     log(f"Creating index {new_index_name}...")
 
