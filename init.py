@@ -65,12 +65,12 @@ restore_body = {
 
 log(f"Restoring snapshot for {indices_wildcard}...")
 
-restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false",
-                   auth=basic, verify=False, headers=headers, json=restore_body)
+# restore_rsp = post(f"{es_host}/_snapshot/az_repo/snapshot_1/_restore?wait_for_completion=false",
+#                    auth=basic, verify=False, headers=headers, json=restore_body)
 
-if restore_rsp.status_code != 200:
-    raise Exception(
-        f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
+# if restore_rsp.status_code != 200:
+#     raise Exception(
+#         f"Failed to restore snapshot. Received status code {restore_rsp.status_code} and body {restore_rsp.json()}")
 
 wait_for_cluster_to_be_green()
 
