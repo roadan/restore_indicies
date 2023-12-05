@@ -104,7 +104,7 @@ for index_name, payload in indices_payload.items():
         print("Setting nested limit to 60000")
         payload["settings"]["index"]["mapping"] = {
             "nested_objects": {
-                "limit": 60000
+                "limit": 100000
             }
         }
 
